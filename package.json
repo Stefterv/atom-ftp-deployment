@@ -1,7 +1,7 @@
 {
   "name": "atom-ftp-deployment",
   "main": "./lib/atom-ftp-deployment",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Run FTP Deplyment",
   "repository": "https://github.com/tomasmatejicek/atom-ftp-deployment",
   "license": "MIT",
