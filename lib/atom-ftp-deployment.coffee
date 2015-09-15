@@ -1,4 +1,5 @@
 child_process = require('child_process')
+{CompositeDisposable, BufferedProcess} = require 'atom'
 path = require('path')
 fs = require('fs')
 
@@ -13,36 +14,27 @@ project_directory = (file_dir) ->
     return file_dir
 
 start_deployment = () =>
-
-    file_path = atom.workspace.getActivePaneItem()?.buffer?.file?.path or ""
-    file_dir = path.dirname(file_path)
-    proj_dir = project_directory(file_dir)
-
-    cmd = []
-
-    cmd.push("start")
-    cmd.push(read_option("php_url"))
-    cmd.push(read_option("deploymentphp_url"))
-    cmd.push(proj_dir + "\\" + read_option("deploymentini_name"))
-
-    console.log(cmd.join(" "))
-
-    child_process.exec(cmd.join(" "), cwd: null, (error, stdout, stderr) ->
-
-      if error
-
-            console.error(
-                """
-                ftp-deployment error when child_process.exec ->
-                cmd = #{cmd.join(" ")}
-                error = #{error}
-                stdout = #{stdout}
-                stderr = #{stderr}
-                """
-            )
-
-    )
-
+  #atom automatically escapes for windows with BufferedProcess so this is the universal method
+  file_path = atom.workspace.getActivePaneItem()?.buffer?.file?.path or ""
+  file_dir = path.dirname(file_path)
+  proj_dir = project_directory(file_dir)
+  command = "php";
+  args = []
+  args.push(read_option("deploymentphp_url"));
+  args.push(proj_dir + "/" + read_option("deploymentini_name"))
+  options = {
+    cwd: proj_dir
+  }
+  stdout = (output) ->
+    console.log(output)
+  stderr = (output) ->
+    console.error(output)
+  exit = (code) ->
+    console.log("Error code: #{code}")
+    if code == 0
+      atom.notifications.addSuccess("Deployed!",{ dismissable: true });
+  console.log("Running command #{command} #{args.join(" ")}")
+  process = new BufferedProcess({command, args, options, stdout, stderr, exit})
 
 read_option = (name) ->
 
